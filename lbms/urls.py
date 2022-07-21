@@ -15,7 +15,16 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from rest_framework_simplejwt import views as jwt_views
+
+from library_store.views.logout.api_wrapper import LogoutAPI
+from library_store.views.register.api_wrapper import RegisterAPI
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+
+    path('register', RegisterAPI.as_view()),
+    path('login', jwt_views.TokenObtainPairView.as_view(), name='login'),
+    path('login/refresh', jwt_views.TokenRefreshView.as_view(), name='login_refresh'),
+    path('logout', LogoutAPI.as_view(), name='auth_logout'),
 ]
