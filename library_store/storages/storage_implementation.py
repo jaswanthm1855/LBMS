@@ -1,6 +1,8 @@
 import datetime
 from typing import Dict, List
 
+from django.contrib.auth import get_user_model
+
 from library_store import models
 from library_store.constants.enums import UserRoleEnum
 from library_store.interactors.storage_interface import StorageInterface
@@ -22,7 +24,7 @@ class StorageImplementation(StorageInterface):
             user=user_details["user"], role=user_details["role"]
         )
 
-    def get_all_books_details(self, is_removed: bool):
+    def get_all_books_details(self, is_removed: bool) -> List[Dict]:
         books = models.Book.objects.filter(is_removed=is_removed).values(
             "book_id", "name", "description", "author", "availability_status"
         )
@@ -80,3 +82,67 @@ class StorageImplementation(StorageInterface):
     def is_book_name_already_exists(self, name: str) -> bool:
         is_name_exists = models.Book.objects.filter(name=name).exists()
         return is_name_exists
+
+    def get_all_users_details(self, roles: List[UserRoleEnum]) -> List[Dict]:
+        users = models.UserDetails.objects.filter(role__in=roles, is_active=True)
+        users_details = [
+            {
+                "user_id": user.user_id,
+                "username": user.user.username,
+                "role": user.role
+            } for user in users
+        ]
+        return users_details
+
+    def update_auth_member_details(
+            self, member_id: int, member_details: Dict):
+        User = get_user_model()
+        user_obj = User.objects.get(id=member_id)
+
+        if member_details["username"]:
+            user_obj.username = member_details["username"]
+
+        if member_details["password"]:
+            user_obj.set_password(member_details["password"])
+
+        user_obj.save()
+
+    def update_member_details(self, member_id: int, member_details: Dict):
+        if member_details["role"]:
+            models.UserDetails.objects.filter(
+                user_id=member_id
+            ).update(role=member_details["role"])
+
+    def remove_member(self, member_id: int):
+        models.UserDetails.objects.filter(
+            user_id=member_id).update(is_active=False)
+
+    def is_user_exists(self, user_id: int) -> bool:
+        is_user_exists = models.UserDetails.objects.filter(
+            user_id=user_id, is_active=True).exists()
+        return is_user_exists
+
+    def is_user_name_exists(self, username: str) -> bool:
+        from django.contrib.auth import get_user_model
+
+        User = get_user_model()
+        is_username_exists = User.objects.filter(username=username).exists()
+        return is_username_exists
+
+    def create_auth_user(self, member_details: Dict) -> int:
+        from django.contrib.auth import get_user_model
+
+        User = get_user_model()
+        user = User.objects.create_user(
+            username=member_details["username"],
+            password=member_details['password']
+        )
+        return user.id
+
+    def add_member(self, member_details: Dict):
+        user_id = member_details["member_id"]
+        user_obj = self._get_user_obj_for_id(user_id)
+
+        models.UserDetails.objects.create(
+            user=user_obj, role=member_details["role"]
+        )
