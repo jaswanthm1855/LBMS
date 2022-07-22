@@ -27,10 +27,9 @@ class RegisterAPI(generics.GenericAPIView):
         request_data = request.data
         role = request_data["role"]
         user_profile_details = {
-            "user": user,
-            "role": role,
+            "user": user, "role": role,
         }
 
         storage = StorageImplementation()
         interactor = RegisterUserDetailsInteractor(storage=storage)
-        interactor.register_user_details(user_profile_details)
+        interactor.register_user_details_wrapper(user_profile_details)
