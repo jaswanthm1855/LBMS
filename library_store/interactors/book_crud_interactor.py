@@ -1,7 +1,7 @@
 from typing import Dict, List
 
 from library_store.custom_exceptions import UserNotAuthorizedException, InvalidBookIdException, \
-    BookNameAlreadyExistsException
+    BookNameAlreadyExistsException, BookIsBorrowedException
 from library_store.interactors.permission_class import PermissionMixin
 from library_store.interactors.storage_interface import StorageInterface
 
@@ -12,9 +12,7 @@ class BookCRUDInteractor(PermissionMixin):
         self.storage = storage
 
     def add_book(self, user_id: int, book_details: Dict):
-        is_librarian = self.is_librarian(user_id)
-        if not is_librarian:
-            raise UserNotAuthorizedException()
+        self._validate_is_user_librarian(user_id)
         self._validate_is_book_name_already_exists(name=book_details["name"])
 
         book_id = self.storage.add_book(user_id, book_details)
@@ -26,14 +24,17 @@ class BookCRUDInteractor(PermissionMixin):
             raise BookNameAlreadyExistsException()
 
     def get_all_books_for_librarian(self, user_id: int) -> Dict:
-        is_librarian = self.is_librarian(user_id)
-        if not is_librarian:
-            raise UserNotAuthorizedException()
+        self._validate_is_user_librarian(user_id)
 
         is_removed = False
         books = self.get_all_books(is_removed=is_removed)
 
         return books
+
+    def _validate_is_user_librarian(self, user_id):
+        is_librarian = self.is_librarian(user_id)
+        if not is_librarian:
+            raise UserNotAuthorizedException()
 
     def get_all_books(self, is_removed: bool):
         books = self.storage.get_all_books_details(is_removed=is_removed)
@@ -48,28 +49,26 @@ class BookCRUDInteractor(PermissionMixin):
         return books
 
     def update_book_details(self, user_id: int, book_id: str, book_details: Dict):
-        is_librarian = self.is_librarian(user_id)
-        if not is_librarian:
-            raise UserNotAuthorizedException()
+        self._validate_is_user_librarian(user_id)
         book_name = book_details.get("name")
         if book_name:
             self._validate_is_book_name_already_exists(name=book_details["name"])
 
-        is_book_exists = self.storage.is_book_exists(book_id)
-        if not is_book_exists:
-            raise InvalidBookIdException()
+        self._validate_is_book_exists(book_id)
 
         self.storage.update_book_details(book_id=book_id, book_details=book_details)
 
     def remove_book(self, user_id: int, book_id: str):
-        is_librarian = self.is_librarian(user_id)
-        if not is_librarian:
-            raise UserNotAuthorizedException()
+        self._validate_is_user_librarian(user_id)
+        self._validate_is_book_exists(book_id)
+        self._validate_is_book_borrowed(book_id)
+
+        self.storage.remove_book(book_id)
+
+    def _validate_is_book_exists(self, book_id):
         is_book_exists = self.storage.is_book_exists(book_id)
         if not is_book_exists:
             raise InvalidBookIdException()
-
-        self.storage.remove_book(book_id)
 
     def get_book_id_wise_borrowed_users_details(self, book_ids: List[str]) -> Dict:
         book_ids = list(set(book_ids))
@@ -78,3 +77,8 @@ class BookCRUDInteractor(PermissionMixin):
             user["id"]: user for user in user_details
         }
         return user_id_wise_user_details
+
+    def _validate_is_book_borrowed(self, book_id: str):
+        is_book_borrowed = self.storage.is_book_borrowed(book_id)
+        if is_book_borrowed:
+            raise BookIsBorrowedException()

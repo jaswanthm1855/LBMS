@@ -5,7 +5,7 @@ from django.contrib.auth.hashers import make_password
 from library_store.constants.constants import DEFAULT_PASSWORD
 from library_store.constants.enums import UserRoleEnum
 from library_store.custom_exceptions import UserNotAuthorizedException, InvalidMemberIdException, \
-    MemberUserNameAlreadyExistsException
+    MemberUserNameAlreadyExistsException, UserHasBorrowedBooksException
 from library_store.interactors.permission_class import PermissionMixin
 from library_store.interactors.storage_interface import StorageInterface
 
@@ -70,8 +70,12 @@ class MemberCRUDInteractor(PermissionMixin):
     def remove_member(self, user_id: int, member_id: int):
         self._validate_is_user_librarian(user_id)
         self._validate_is_member_exists(member_id)
+        self._validate_is_member_borrowed_books(member_id)
 
         self.storage.remove_member(member_id=member_id)
+
+        self.storage.update_auth_user_active_status(
+            user_id=member_id, is_active=False)
 
     def _validate_is_user_librarian(self, user_id: int):
         is_librarian = self.is_librarian(user_id)
@@ -87,3 +91,9 @@ class MemberCRUDInteractor(PermissionMixin):
         is_name_exists = self.storage.is_user_name_exists(username)
         if is_name_exists:
             raise MemberUserNameAlreadyExistsException()
+
+    def _validate_is_member_borrowed_books(self, member_id: int):
+        user_borrowed_book_ids = self.storage.get_user_borrowed_book_ids(
+            user_id=member_id)
+        if user_borrowed_book_ids:
+            raise UserHasBorrowedBooksException()
