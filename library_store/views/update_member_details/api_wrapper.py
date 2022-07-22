@@ -11,7 +11,7 @@ from library_store.custom_exceptions import UserNotAuthorizedException, InvalidM
 class UpdateMemberDetailsAPI(generics.GenericAPIView):
     permission_classes = (IsAuthenticated,)
 
-    def post(self, request, *args,  **kwargs):
+    def put(self, request, *args,  **kwargs):
         user_id = request.user.id
         request_data = request.data
         member_id = kwargs["member_id"]

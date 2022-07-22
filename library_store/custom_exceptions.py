@@ -36,3 +36,7 @@ class UserHasBorrowedBooksException(Exception):
 
 class BookIsBorrowedException(Exception):
     pass
+
+
+class InvalidAvailabilityStatusException(Exception):
+    pass

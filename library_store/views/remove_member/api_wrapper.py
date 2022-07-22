@@ -11,7 +11,7 @@ from library_store.custom_exceptions import UserNotAuthorizedException, InvalidM
 class RemoveMemberAPI(generics.GenericAPIView):
     permission_classes = (IsAuthenticated,)
 
-    def post(self, request, *args,  **kwargs):
+    def delete(self, request, *args,  **kwargs):
         user_id = request.user.id
         member_id = kwargs["member_id"]
 

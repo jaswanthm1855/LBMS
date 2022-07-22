@@ -24,3 +24,7 @@ class BookAvailabilityStatusEnum(enum.Enum):
             (choice.value, choice.value)
             for choice in cls
         )
+
+    @classmethod
+    def values_list(cls):
+        return [choice.value for choice in cls]

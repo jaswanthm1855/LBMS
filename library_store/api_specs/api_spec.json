@@ -1,0 +1,788 @@
+{
+  "swagger": "2.0",
+  "host": "127.0.0.1:8000",
+  "basePath": "/api",
+  "info": {
+    "version": "1.0.0",
+    "title": "Simple API",
+    "description": "A simple API to learn how to write OpenAPI Specification"
+  },
+  "schemes": [
+    "http"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "securityDefinitions": {
+    "oauth": {
+      "tokenUrl": "http://auth.ibtspl.com/oauth2/",
+      "flow": "password",
+      "scopes": {
+        "read": "read users",
+        "write": "create users",
+        "update": "update users",
+        "delete": "delete users"
+      },
+      "type": "oauth2"
+    }
+  },
+  "security": [
+    {
+      "oauth": [
+        "read",
+        "write"
+      ]
+    }
+  ],
+  "definitions": {
+    "BookDetails": {
+      "type": "object",
+      "properties": {
+        "book_id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "author": {
+          "type": "string"
+        },
+        "availability_status": {
+          "type": "string",
+          "enum": [
+            "AVAILABLE",
+            "BORROWED"
+          ]
+        }
+      },
+      "required": [
+        "book_id",
+        "name",
+        "author",
+        "availability_status"
+      ]
+    }
+  },
+  "parameters": {
+    "RegisterUserBodyParameter": {
+      "name": "RegisterUser",
+      "description": "register user",
+      "in": "body",
+      "required": true,
+      "schema": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "LIBRARIAN",
+              "MEMBER"
+            ]
+          }
+        }
+      }
+    },
+    "LoginBodyParameter": {
+      "name": "Login",
+      "description": "Login",
+      "in": "body",
+      "required": true,
+      "schema": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "username",
+          "password"
+        ]
+      }
+    },
+    "LogoutBodyParameter": {
+      "name": "Logout",
+      "description": "Logout",
+      "in": "body",
+      "required": true,
+      "schema": {
+        "type": "object",
+        "properties": {
+          "refresh": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "refresh"
+        ]
+      }
+    },
+    "AddBookBodyParameter": {
+      "name": "Add Book",
+      "description": "Add Book",
+      "in": "body",
+      "required": true,
+      "schema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "author": {
+            "type": "string"
+          },
+          "availability_status": {
+            "type": "string",
+            "enum": [
+              "AVAILABLE",
+              "BORROWED"
+            ]
+          }
+        },
+        "required": [
+          "name",
+          "author",
+          "availability_status"
+        ]
+      }
+    },
+    "UpdateBookBodyParameter": {
+      "name": "Update Book",
+      "description": "Update Book",
+      "in": "body",
+      "required": true,
+      "schema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "author": {
+            "type": "string"
+          },
+          "availability_status": {
+            "type": "string",
+            "enum": [
+              "AVAILABLE",
+              "BORROWED"
+            ]
+          }
+        }
+      }
+    },
+    "BookIdParameter": {
+      "name": "book_id",
+      "in": "path",
+      "required": true,
+      "description": "book id",
+      "type": "string"
+    },
+    "AddMemberBodyParameter": {
+      "name": "Add Member",
+      "description": "Add Member",
+      "in": "body",
+      "required": true,
+      "schema": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "LIBRARIAN",
+              "MEMBER"
+            ]
+          },
+          "password": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "username",
+          "role",
+          "password"
+        ]
+      }
+    },
+    "MemberIdParameter": {
+      "name": "member_id",
+      "in": "path",
+      "required": true,
+      "description": "member id",
+      "type": "integer"
+    },
+    "UpdateMemberBodyParameter": {
+      "name": "Update Member",
+      "description": "Update Member",
+      "in": "body",
+      "required": true,
+      "schema": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "UpdateBookAvailabilityStatusBodyParameter": {
+      "name": "Update Book Availability Status",
+      "description": "Update Book Availability Status",
+      "in": "body",
+      "required": true,
+      "schema": {
+        "type": "object",
+        "properties": {
+          "availability_status": {
+            "type": "string",
+            "enum": [
+              "AVAILABLE",
+              "BORROWED"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "responses": {
+    "RegisterUserSuccessResponse": {
+      "description": "register user success response",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "user": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "integer"
+              },
+              "username": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "username"
+            ]
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "user",
+          "message"
+        ]
+      }
+    },
+    "LoginSuccessResponse": {
+      "description": "Login success response",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "access": {
+            "type": "string"
+          },
+          "refresh": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "access",
+          "refresh"
+        ]
+      }
+    },
+    "AddBookSuccessResponse": {
+      "description": "add book success response",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "messsage": {
+            "type": "string"
+          },
+          "book_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "message",
+          "book_id"
+        ]
+      }
+    },
+    "GetAllBooksDetailsForLibrarianSuccessResponse": {
+      "description": "get all books for librarian success response",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "books_details": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "book_id": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": "string"
+                },
+                "author": {
+                  "type": "string"
+                },
+                "availability_status": {
+                  "type": "string",
+                  "enum": [
+                    "AVAILABLE",
+                    "BORROWED"
+                  ]
+                }
+              },
+              "required": [
+                "book_id",
+                "name",
+                "author",
+                "availability_status"
+              ]
+            }
+          }
+        },
+        "required": [
+          "books_details"
+        ]
+      }
+    },
+    "AddMemberSuccessResponse": {
+      "description": "add member success response",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "messsage": {
+            "type": "string"
+          },
+          "member_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "message",
+          "member_id"
+        ]
+      }
+    },
+    "GetAllMembersDetailsForLibrarianSuccessResponse": {
+      "description": "add member success response",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "users_details": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "user_id": {
+                  "type": "integer"
+                },
+                "username": {
+                  "type": "string"
+                },
+                "role": {
+                  "type": "string",
+                  "enum": [
+                    "LIBRARIAN",
+                    "MEMBER"
+                  ]
+                }
+              },
+              "required": [
+                "user_id",
+                "username",
+                "role"
+              ]
+            }
+          }
+        },
+        "required": [
+          "users_details"
+        ]
+      }
+    },
+    "GetAllBooksDetailsForMemberSuccessResponse": {
+      "description": "add member success response",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "available_books": {
+            "type": "array",
+            "items": {
+              "$ref": "#/definitions/BookDetails"
+            }
+          },
+          "user_borrowed_books": {
+            "type": "array",
+            "items": {
+              "$ref": "#/definitions/BookDetails"
+            }
+          }
+        },
+        "required": [
+          "available_books",
+          "user_borrowed_books"
+        ]
+      }
+    }
+  },
+  "paths": {
+    "/register/": {
+      "post": {
+        "description": "register user or librarian",
+        "summary": "",
+        "security": [
+          {
+            "oauth": [
+              "write"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/RegisterUserBodyParameter"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/RegisterUserSuccessResponse"
+          }
+        }
+      }
+    },
+    "/login/": {
+      "post": {
+        "description": "Login user",
+        "summary": "",
+        "security": [
+          {
+            "oauth": [
+              "write"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/LoginBodyParameter"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/LoginSuccessResponse"
+          }
+        }
+      }
+    },
+    "/logout/": {
+      "post": {
+        "description": "Logout user",
+        "summary": "",
+        "security": [
+          {
+            "oauth": [
+              "write"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/LogoutBodyParameter"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Logout Successful"
+          }
+        }
+      }
+    },
+    "/library_store/librarian/book/add/": {
+      "post": {
+        "description": "Add Book",
+        "summary": "",
+        "security": [
+          {
+            "oauth": [
+              "write"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/AddBookBodyParameter"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/AddBookSuccessResponse"
+          }
+        }
+      }
+    },
+    "/library_store/librarian/book/{book_id}/update/": {
+      "put": {
+        "description": "Update Book details",
+        "summary": "",
+        "security": [
+          {
+            "oauth": [
+              "write"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/BookIdParameter"
+          },
+          {
+            "$ref": "#/parameters/UpdateBookBodyParameter"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Update successful"
+          }
+        }
+      }
+    },
+    "/library_store/librarian/book/{book_id}/remove/": {
+      "delete": {
+        "description": "Remove Book",
+        "summary": "",
+        "security": [
+          {
+            "oauth": [
+              "write"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/BookIdParameter"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Remove successful"
+          }
+        }
+      }
+    },
+    "/library_store/librarian/book/all/": {
+      "get": {
+        "description": "Remove Book",
+        "summary": "",
+        "security": [
+          {
+            "oauth": [
+              "read"
+            ]
+          }
+        ],
+        "parameters": [
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/GetAllBooksDetailsForLibrarianSuccessResponse"
+          }
+        }
+      }
+    },
+    "/library_store/librarian/member/add/": {
+      "post": {
+        "description": "Add Member",
+        "summary": "",
+        "security": [
+          {
+            "oauth": [
+              "write"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/AddMemberBodyParameter"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/AddMemberSuccessResponse"
+          }
+        }
+      }
+    },
+    "/library_store/librarian/member/{member_id}/update/": {
+      "put": {
+        "description": "Update Member details",
+        "summary": "",
+        "security": [
+          {
+            "oauth": [
+              "write"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/MemberIdParameter"
+          },
+          {
+            "$ref": "#/parameters/UpdateMemberBodyParameter"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Update successful"
+          }
+        }
+      }
+    },
+    "/library_store/librarian/member/{member_id}/remove/": {
+      "delete": {
+        "description": "Remove Member",
+        "summary": "",
+        "security": [
+          {
+            "oauth": [
+              "write"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/MemberIdParameter"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Remove successful"
+          }
+        }
+      }
+    },
+    "/library_store/librarian/member/all/": {
+      "get": {
+        "description": "Get all members for librarian",
+        "summary": "",
+        "security": [
+          {
+            "oauth": [
+              "read"
+            ]
+          }
+        ],
+        "parameters": [
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/GetAllMembersDetailsForLibrarianSuccessResponse"
+          }
+        }
+      }
+    },
+    "/library_store/member/book/all/": {
+      "get": {
+        "description": "Get all Books for member",
+        "summary": "",
+        "security": [
+          {
+            "oauth": [
+              "read"
+            ]
+          }
+        ],
+        "parameters": [
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/GetAllBooksDetailsForMemberSuccessResponse"
+          }
+        }
+      }
+    },
+    "/library_store/member/book/{book_id}/update/": {
+      "put": {
+        "description": "Update Book Availability Status",
+        "summary": "",
+        "security": [
+          {
+            "oauth": [
+              "read"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/BookIdParameter"
+          },
+          {
+            "$ref": "#/parameters/UpdateBookAvailabilityStatusBodyParameter"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "update successful"
+          }
+        }
+      }
+    },
+    "/library_store/member/account/delete/": {
+      "delete": {
+        "description": "Delete Member Account",
+        "summary": "",
+        "security": [
+          {
+            "oauth": [
+              "read"
+            ]
+          }
+        ],
+        "parameters": [
+        ],
+        "responses": {
+          "200": {
+            "description": "remove successful"
+          }
+        }
+      }
+    }
+  }
+}
