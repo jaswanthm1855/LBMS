@@ -4,7 +4,8 @@ from django.http import HttpResponse
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
 
-from library_store.custom_exceptions import UserNotAuthorizedException, InvalidMemberIdException
+from library_store.custom_exceptions import UserNotAuthorizedException, InvalidMemberIdException, \
+    UserHasBorrowedBooksException
 
 
 class RemoveMemberAPI(generics.GenericAPIView):
@@ -35,6 +36,9 @@ class RemoveMemberAPI(generics.GenericAPIView):
         except InvalidMemberIdException:
             response = {"message": "Invalid Member Id"}
             status = 404
+        except UserHasBorrowedBooksException:
+            response = {"message": "Member has borrowed books"}
+            status = 400
 
         response = json.dumps(response)
 

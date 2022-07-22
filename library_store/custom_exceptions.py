@@ -16,3 +16,23 @@ class InvalidMemberIdException(Exception):
 
 class MemberUserNameAlreadyExistsException(Exception):
     pass
+
+
+class AvailabilityStatusUpdationIsNotAllowedException(Exception):
+    pass
+
+
+class UserDoesNotBorrowedBookException(Exception):
+    pass
+
+
+class BookIsAlreadyBorrowedException(Exception):
+    pass
+
+
+class UserHasBorrowedBooksException(Exception):
+    pass
+
+
+class BookIsBorrowedException(Exception):
+    pass

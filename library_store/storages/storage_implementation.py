@@ -4,7 +4,7 @@ from typing import Dict, List
 from django.contrib.auth import get_user_model
 
 from library_store import models
-from library_store.constants.enums import UserRoleEnum
+from library_store.constants.enums import UserRoleEnum, BookAvailabilityStatusEnum
 from library_store.interactors.storage_interface import StorageInterface
 
 
@@ -117,6 +117,11 @@ class StorageImplementation(StorageInterface):
         models.UserDetails.objects.filter(
             user_id=member_id).update(is_active=False)
 
+    def update_auth_user_active_status(self, user_id: int, is_active: bool):
+        user_obj = self._get_user_obj_for_id(user_id)
+        user_obj.is_active = False
+        user_obj.save()
+
     def is_user_exists(self, user_id: int) -> bool:
         is_user_exists = models.UserDetails.objects.filter(
             user_id=user_id, is_active=True).exists()
@@ -146,3 +151,66 @@ class StorageImplementation(StorageInterface):
         models.UserDetails.objects.create(
             user=user_obj, role=member_details["role"]
         )
+
+    def get_all_available_books_details(self) -> List[Dict]:
+        available_status = BookAvailabilityStatusEnum.available.value
+
+        books = models.Book.objects.filter(
+            is_removed=False, availability_status=available_status)
+        books_details = [
+            self._convert_to_book_details_dict(book) for book in books
+        ]
+        return books_details
+
+    def get_user_borrowed_book_ids(self, user_id: int) -> List[str]:
+        book_ids = models.UserBookBorrowDetails.objects.filter(
+            user_id=user_id, is_returned=False).values_list('book_id', flat=True)
+        book_ids = list(map(str, book_ids))
+        return book_ids
+
+    def get_books_details(self, book_ids: List[str]) -> List[Dict]:
+
+        books = models.Book.objects.filter(
+            book_id__in=book_ids, is_removed=False)
+        borrowed_books_details = [
+            self._convert_to_book_details_dict(book) for book in books
+        ]
+        return borrowed_books_details
+
+    @staticmethod
+    def _convert_to_book_details_dict(book: models.Book) -> Dict:
+        book_details = {
+            "book_id": str(book.book_id),
+            "name": book.name,
+            "description": book.description,
+            "author": book.author,
+            "availability_status": book.availability_status,
+        }
+        return book_details
+
+    def update_book_availability_status(
+            self, book_id: str, availability_status: BookAvailabilityStatusEnum):
+        models.Book.objects.filter(
+            book_id=book_id).update(availability_status=availability_status)
+
+    def update_user_borrowed_book_return_status(
+            self, member_id: int, book_id: str, return_datetime: datetime.datetime):
+        models.UserBookBorrowDetails.objects.filter(
+            user_id=member_id, book_id=book_id
+        ).update(returned_date_time=return_datetime, is_returned=True)
+
+    def is_user_borrowed_book(self, member_id: int, book_id: str) -> bool:
+        is_user_borrowed_book = models.UserBookBorrowDetails.objects.filter(
+            user_id=member_id, book_id=book_id).exists()
+        return is_user_borrowed_book
+
+    def create_user_borrowed_book(self, member_id: int, book_id: str):
+        user_obj = self._get_user_obj_for_id(member_id)
+        models.UserBookBorrowDetails.objects.create(
+            user=user_obj, book_id=book_id)
+
+    def is_book_borrowed(self, book_id: str) -> bool:
+        is_book_borrowed = models.Book.objects.filter(
+            book_id=book_id, availability_status=BookAvailabilityStatusEnum.borrowed.value
+        ).exists()
+        return is_book_borrowed
