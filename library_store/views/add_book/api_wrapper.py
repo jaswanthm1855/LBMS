@@ -6,7 +6,7 @@ from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
 
 from library_store.custom_exceptions import \
-    UserNotAuthorizedException, BookNameAlreadyExistsException
+    UserNotAuthorizedException, BookNameAlreadyExistsException, InvalidAvailabilityStatusException
 
 
 class AddBookAPI(generics.GenericAPIView):
@@ -43,6 +43,9 @@ class AddBookAPI(generics.GenericAPIView):
         except BookNameAlreadyExistsException:
             response = {"message": "Book name already exists"}
             status = 403
+        except InvalidAvailabilityStatusException:
+            response = {"message": "Invalid Availability status"}
+            status = 400
 
         response = json.dumps(response)
 

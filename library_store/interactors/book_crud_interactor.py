@@ -1,7 +1,8 @@
 from typing import Dict, List
 
+from library_store.constants.enums import BookAvailabilityStatusEnum
 from library_store.custom_exceptions import UserNotAuthorizedException, InvalidBookIdException, \
-    BookNameAlreadyExistsException, BookIsBorrowedException
+    BookNameAlreadyExistsException, BookIsBorrowedException, InvalidAvailabilityStatusException
 from library_store.interactors.permission_class import PermissionMixin
 from library_store.interactors.storage_interface import StorageInterface
 
@@ -14,9 +15,15 @@ class BookCRUDInteractor(PermissionMixin):
     def add_book(self, user_id: int, book_details: Dict):
         self._validate_is_user_librarian(user_id)
         self._validate_is_book_name_already_exists(name=book_details["name"])
+        self._validate_availability_status(book_details["availability_status"])
 
         book_id = self.storage.add_book(user_id, book_details)
         return book_id
+
+    @staticmethod
+    def _validate_availability_status(availability_status: BookAvailabilityStatusEnum):
+        if availability_status not in BookAvailabilityStatusEnum.values_list():
+            raise InvalidAvailabilityStatusException()
 
     def _validate_is_book_name_already_exists(self, name: str):
         is_name_exists = self.storage.is_book_name_already_exists(name=name)

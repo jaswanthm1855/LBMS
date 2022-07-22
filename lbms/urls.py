@@ -23,10 +23,10 @@ from library_store.views.register.api_wrapper import RegisterAPI
 urlpatterns = [
     path('admin/', admin.site.urls),
 
-    path('register', RegisterAPI.as_view()),
-    path('login', jwt_views.TokenObtainPairView.as_view(), name='login'),
-    path('login/refresh', jwt_views.TokenRefreshView.as_view(), name='login_refresh'),
-    path('logout', LogoutAPI.as_view(), name='auth_logout'),
+    path('api/register/', RegisterAPI.as_view()),
+    path('api/login/', jwt_views.TokenObtainPairView.as_view(), name='login'),
+    path('api/login/refresh/', jwt_views.TokenRefreshView.as_view(), name='login_refresh'),
+    path('api/logout/', LogoutAPI.as_view(), name='auth_logout'),
 
-    path('library_store/', include('library_store.urls')),
+    path('api/library_store/', include('library_store.urls')),
 ]

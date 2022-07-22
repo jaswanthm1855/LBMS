@@ -12,7 +12,7 @@ from library_store.custom_exceptions import InvalidBookIdException, Availability
 class UpdateBookAvailabilityStatusAPI(generics.GenericAPIView):
     permission_classes = (IsAuthenticated,)
 
-    def post(self, request, *args, **kwargs):
+    def put(self, request, *args, **kwargs):
         user_id = request.user.id
         request_data = request.data
         book_id = kwargs["book_id"]
