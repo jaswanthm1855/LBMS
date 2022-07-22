@@ -30,7 +30,7 @@ class BookCRUDInteractor(PermissionMixin):
         if is_name_exists:
             raise BookNameAlreadyExistsException()
 
-    def get_all_books_for_librarian(self, user_id: int) -> Dict:
+    def get_all_books_for_librarian(self, user_id: int) -> List[Dict]:
         self._validate_is_user_librarian(user_id)
 
         is_removed = False
@@ -80,10 +80,10 @@ class BookCRUDInteractor(PermissionMixin):
     def get_book_id_wise_borrowed_users_details(self, book_ids: List[str]) -> Dict:
         book_ids = list(set(book_ids))
         user_details = self.storage.get_book_borrowed_users_details(book_ids)
-        user_id_wise_user_details = {
-            user["id"]: user for user in user_details
+        book_id_wise_borrowed_users_details = {
+            user["book_id"]: user for user in user_details
         }
-        return user_id_wise_user_details
+        return book_id_wise_borrowed_users_details
 
     def _validate_is_book_borrowed(self, book_id: str):
         is_book_borrowed = self.storage.is_book_borrowed(book_id)
